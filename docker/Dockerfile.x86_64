@@ -1,0 +1,89 @@
+FROM nvidia/opengl:1.2-glvnd-devel-ubuntu18.04
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN set -x && \
+  apt-get update -y && \
+  apt-get upgrade -y --no-install-recommends && \
+  : "basic dependencies" && \
+  apt-get install -y \
+    build-essential \
+    pkg-config \
+    cmake \
+    git \
+    wget \
+    curl \
+    tar \
+    unzip && \
+  : "remove cache" && \
+  apt-get autoremove -y && \
+  rm -rf /var/lib/apt/lists/*
+
+ARG CMAKE_INSTALL_PREFIX=/usr/local
+ARG NUM_THREADS=1
+
+ENV CPATH=${CMAKE_INSTALL_PREFIX}/include:${CPATH}
+ENV C_INCLUDE_PATH=${CMAKE_INSTALL_PREFIX}/include:${C_INCLUDE_PATH}
+ENV CPLUS_INCLUDE_PATH=${CMAKE_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}
+ENV LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${LIBRARY_PATH}
+ENV LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}
+
+## App dependencies
+RUN set -x && \
+    apt-get install -y \
+    g++ \
+    libopenscenegraph-dev \
+    qt5-default
+
+WORKDIR /workspace
+
+
+## Build osgQt
+RUN set -x && \
+    git clone https://github.com/openscenegraph/osgQt.git && \
+    cd osgQt/ && \
+    git checkout 6e4de && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make && \
+    make install
+
+ENV LD_LIBRARY_PATH=/usr/local/lib64
+
+WORKDIR /workspace
+
+
+## Build OpenRoadEd
+RUN set -x && \
+    git clone https://github.com/fhwedel-hoe/OpenRoadEd.git && \
+    mkdir OpenRoadEd/OpenRoadEd/build && \
+    cd OpenRoadEd/OpenRoadEd/build && \
+    cmake .. && \
+    make
+
+
+ENV LC_ALL=C
+
+RUN apt-get update && apt-get install -y \
+    sudo \
+    tmux \
+    openssh-server \
+    && rm -rf /var/lib/apt/lists/*
+
+# User setup
+ARG USER=openroaded
+ARG UID=1000    
+ARG GID=1000
+ARG PW=user
+
+# Add user and his password
+RUN useradd -m ${USER} --uid=${UID} \
+    && echo "${USER}:${PW}" | chpasswd \
+    && usermod -s /bin/bash ${USER} \
+    && usermod -a -G sudo ${USER}
+
+WORKDIR /workspace/OpenRoadEd
+
+# ENTRYPOINT ["/bin/bash", "OpenRoadEd/build/OpenRoadEd"]
+

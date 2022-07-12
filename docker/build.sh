@@ -1,11 +1,17 @@
 #!/bin/bash
 
 NUM_THREADS=6
-echo "Building OpenRoadEd..."
+
+orange=`tput setaf 3`
+reset_color=`tput sgr0`
+
+ARCH=`uname -m`
+
+echo "Building for ${orange}${ARCH}${reset_color}"
 
 docker build .. \
-    -f Dockerfile \
+    -f Dockerfile.${ARCH} \
     --build-arg UID=$(id -g) \
     --build-arg GID=$(id -g) \
     --build-arg NUM_THREADS=${NUM_THREADS} \
-    -t open-road-ed:latest
+    -t ${ARCH}.openroaded:latest

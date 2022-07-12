@@ -18,15 +18,24 @@ get_real_path(){
 
 DATA_DIR=$1
 
-echo "Running on OpenRoadEd ..."
+orange=`tput setaf 3`
+reset_color=`tput sgr0`
 
-# if [ "$ARCH" == "x86_64" ] 
-# then
-#     ARGS="--ipc host --gpus all -e NVIDIA_DRIVER_CAPABILITIES=all"
-# else
-#     echo "Arch ${ARCH} not supported"
-#     exit
-# fi
+export ARCH=`uname -m`
+
+echo "Running on ${orange}${ARCH}${reset_color}"
+
+if [ "$ARCH" == "x86_64" ] 
+then
+    ARGS="--ipc host --gpus all -e NVIDIA_DRIVER_CAPABILITIES=all"
+elif [ "$ARCH" == "aarch64" ] 
+then
+    ARGS="--runtime nvidia"
+else
+    echo "Arch ${ARCH} not supported"
+    exit
+fi
+
 
 docker run -it -d --rm \
         --env="DISPLAY=$DISPLAY" \
@@ -36,6 +45,6 @@ docker run -it -d --rm \
         --net "host" \
         -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
         -v "$DATA_DIR":/workspace/data:rw \
-        open-road-ed:latest
+        ${ARCH}.openroaded:latest
 
     # "$ARGS" \

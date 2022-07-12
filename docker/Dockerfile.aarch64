@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM nvcr.io/nvidia/l4t-base:r32.4.4
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -14,8 +14,19 @@ RUN set -x && \
     wget \
     curl \
     tar \
-    vim \
-    unzip
+    unzip && \
+  : "remove cache" && \
+  apt-get autoremove -y && \
+  rm -rf /var/lib/apt/lists/*
+
+ARG CMAKE_INSTALL_PREFIX=/usr/local
+ARG NUM_THREADS=1
+
+ENV CPATH=${CMAKE_INSTALL_PREFIX}/include:${CPATH}
+ENV C_INCLUDE_PATH=${CMAKE_INSTALL_PREFIX}/include:${C_INCLUDE_PATH}
+ENV CPLUS_INCLUDE_PATH=${CMAKE_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}
+ENV LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${LIBRARY_PATH}
+ENV LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}
 
 ## App dependencies
 RUN set -x && \
@@ -27,20 +38,20 @@ RUN set -x && \
 WORKDIR /workspace
 
 
-## Build osgQt
-RUN set -x && \
-    git clone https://github.com/openscenegraph/osgQt.git && \
-    cd osgQt/ && \
-    git checkout 6e4de && \
-    mkdir build && \
-    cd build && \
-    cmake .. && \
-    make && \
-    make install
+# ## Build osgQt
+# RUN set -x && \
+#     git clone https://github.com/openscenegraph/osgQt.git && \
+#     cd osgQt/ && \
+#     git checkout 6e4de && \
+#     mkdir build && \
+#     cd build && \
+#     cmake .. && \
+#     make && \
+#     make install
 
-ENV LD_LIBRARY_PATH=/usr/local/lib64
+# ENV LD_LIBRARY_PATH=/usr/local/lib64
 
-WORKDIR /workspace
+# WORKDIR /workspace
 
 
 ## Build OpenRoadEd
@@ -73,6 +84,3 @@ RUN useradd -m ${USER} --uid=${UID} \
     && usermod -a -G sudo ${USER}
 
 WORKDIR /workspace/OpenRoadEd
-
-# ENTRYPOINT ["/bin/bash", "OpenRoadEd/build/OpenRoadEd"]
-
