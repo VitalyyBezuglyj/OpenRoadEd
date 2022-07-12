@@ -38,6 +38,7 @@ fi
 
 
 docker run -it -d --rm \
+        $ARGS \
         --env="DISPLAY=$DISPLAY" \
         --env="QT_X11_NO_MITSHM=1" \
         --privileged \

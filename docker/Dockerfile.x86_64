@@ -35,20 +35,20 @@ RUN set -x && \
 WORKDIR /workspace
 
 
-## Build osgQt
-RUN set -x && \
-    git clone https://github.com/openscenegraph/osgQt.git && \
-    cd osgQt/ && \
-    git checkout 6e4de && \
-    mkdir build && \
-    cd build && \
-    cmake .. && \
-    make && \
-    make install
+# ## Build osgQt
+# RUN set -x && \
+#     git clone https://github.com/openscenegraph/osgQt.git && \
+#     cd osgQt/ && \
+#     git checkout 6e4de && \
+#     mkdir build && \
+#     cd build && \
+#     cmake .. && \
+#     make && \
+#     make install
 
-ENV LD_LIBRARY_PATH=/usr/local/lib64
+# ENV LD_LIBRARY_PATH=/usr/local/lib64
 
-WORKDIR /workspace
+# WORKDIR /workspace
 
 
 ## Build OpenRoadEd
